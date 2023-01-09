@@ -1,67 +1,26 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable max-len */
-const { generateGroupings, cleanScoreSheet } = require('./tournamentHelpers');
 const { TournamentModel, TournamentStageModel } = require('./tournamentModels');
 
 // Create
 exports.createTournamentService = async (data) => TournamentModel.create({ ...data });
 
-exports.createGroupStageService = async (data) => {
-  const { tournamentID, teamsPerGroup, name } = { ...data };
-  const groupings = await generateGroupings(tournamentID, teamsPerGroup);
-  const dataObj = {
-    tournament: tournamentID,
-    name,
-    groupings,
-  };
-  const groupStage = await TournamentStageModel.create({ ...dataObj });
-  return groupStage;
-};
+exports.createGroupStageService = async (data) => TournamentStageModel.create({ ...data });
 
 // Read
-exports.viewTournamentService = async (id) => TournamentModel.findOne({ id });
+exports.viewTournamentService = async (id) => TournamentModel.findOne({ id }).populate('stage');
 
-exports.viewGroupStage = async (id) => {
-  const groupStage = await TournamentStageModel.findOne({ tournament_id: id });
-  return { id: groupStage._id, groupings: groupStage.groupings };
-};
+// exports.viewGroupStage = async (id) => {
+//   const groupStage = await TournamentStageModel.findOne({ tournament_id: id });
+//   return { id: groupStage._id, groupings: groupStage.groupings };
+// };
 
-exports.viewGroupStageTable = async (tournamentID, stageID) => {
-  const groupStage = await TournamentStageModel.findOne({
-    tournament_id: tournamentID, id: stageID,
-  });
-  return { id: groupStage._id, groupings: groupStage.groupings };
-};
-
-exports.viewAllTournamentService = async () => TournamentModel.find({});
+exports.viewAllTournamentService = async () => TournamentModel.find({}).populate('stage');
 
 // Update
-exports.updateTournamentService = async (id, tournamentData) => TournamentModel.findByIdAndUpdate(id, { $set: tournamentData });
+exports.updateTournamentService = async (id, tournamentData) => TournamentModel.updateOne({ _id: id }, tournamentData);
 
-exports.updateGroupStageScoreTableService = async (tournamentData) => {
-  const {
-    tournamentID,
-    stageID,
-    tableID,
-    scoreSheet,
-  } = tournamentData;
-
-  const groupStage = await TournamentStageModel.findOne({
-    tournament_id: tournamentID, id: stageID,
-  });
-
-  const table = groupStage?.groupings[tableID];
-  const groupings = { ...groupStage?.groupings };
-  const fixtures = groupings[tableID]?.fixtures;
-
-  const cleanedScoreSheet = cleanScoreSheet(table, scoreSheet, fixtures);
-  console.log(cleanedScoreSheet);
-
-  groupings[tableID].scoreTable = cleanedScoreSheet.scoreTable;
-  groupings[tableID].fixtures = cleanedScoreSheet.modifiedFixtures;
-
-  return TournamentStageModel.findByIdAndUpdate({ _id: stageID }, { $set: { groupings } });
-};
+exports.updateGroupStageScoreTableService = async (stageID, groupings) => TournamentStageModel.findByIdAndUpdate({ _id: stageID }, { $set: { groupings } });
 
 // Delete
-exports.updateTournamentService = async (id) => TournamentModel.findByIdAndRemove(id);
+exports.deleteTournamentService = async (id) => TournamentModel.findByIdAndRemove(id);

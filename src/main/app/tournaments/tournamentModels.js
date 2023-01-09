@@ -7,21 +7,9 @@ const tournamentStageModel = new mongoose.Schema({
     unique: true,
   },
 
-  tournament: {
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'TournamentModel',
-    }],
-  },
-
   groupings: {
     type: Object,
     required: true,
-    default: {},
-  },
-
-  history: {
-    type: Object,
     default: {},
   },
 
@@ -50,6 +38,18 @@ const tournamentModel = new mongoose.Schema({
     },
   },
 
+  stages: {
+    type: [],
+    required: true,
+  },
+
+  stage: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TournamentStageModel',
+    }],
+  },
+
   description: {
     type: String,
   },
@@ -62,6 +62,13 @@ const tournamentModel = new mongoose.Schema({
       validator: (v) => v.length % 2 === 0,
       message: (props) => `${props} is not a valid team number`,
     },
+  },
+
+  history: {
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TournamentStageModel',
+    }],
   },
 
   createdAt: {
