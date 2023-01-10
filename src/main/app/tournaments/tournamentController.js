@@ -22,6 +22,7 @@ const {
   generateGroupings,
   getQualifiedTeams,
   isFinals,
+  generateGroupingsTable,
   // getVrsTableID,
   // allMatchesPlayed,
 } = require('./tournamentHelpers');
@@ -41,8 +42,20 @@ exports.createTournament = async (req, res) => {
 
 exports.createGroupStage = async (req, res) => {
   const data = req.body;
-  const { tournamentID, teamsPerGroup, name } = { ...data };
-  const groupings = await generateGroupings(tournamentID, teamsPerGroup);
+  const {
+    tournamentID,
+    teamsPerGroup,
+    mode,
+    name,
+  } = { ...data };
+
+  let groupings = {};
+
+  if (mode === 'automatic') {
+    groupings = await generateGroupings(tournamentID, teamsPerGroup);
+  } else {
+    groupings = generateGroupingsTable(data.teamDivisions);
+  }
   const dataObj = { name, groupings };
 
   try {

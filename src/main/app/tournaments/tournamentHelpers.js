@@ -64,6 +64,7 @@ const generateGroupingsTable = (teamDivisions) => {
   }
   return teamGroupings;
 };
+exports.generateGroupingsTable = generateGroupingsTable;
 
 exports.generateGroupings = async (tournamentID, teamsPerGroup) => {
   const tournament = await TournamentModel.findOne({ _id: tournamentID });
